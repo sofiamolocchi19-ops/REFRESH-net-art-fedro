@@ -47,8 +47,8 @@
     <a id="refresh-link" onclick="window.location.reload();">(refresh)</a>
 
     <script>
-        // Ricordati di incollare il tuo testo completo qui sotto tra i backtick `
-        const originalText = `Socrate – Ho sentito narrare che a Naucrati d’Egitto dimorava uno dei vecchi dèi del
+        // Incolla qui il tuo testo completo tra i backtick `
+        const originalText = Socrate – Ho sentito narrare che a Naucrati d’Egitto dimorava uno dei vecchi dèi del
 paese, il dio a cui è sacro l’uccello chiamato ibis, e di nome detto Theuth. Egli fu
 l’inventore dei numeri, [d] del calcolo, della geometria e dell’astronomia, per non parlare
 del gioco del tavoliere e dei dadi e finalmente delle lettere dell’alfabeto. Re dell’intiero
@@ -103,12 +103,9 @@ scritto, ma legittimo, e vedere in che modo nasce e di quanto è migliore e piú
 dell’altro?
 Fedro – Che discorso intendi e qual è la sua origine?
 Socrate – Il discorso che è scritto con la scienza nell’anima di chi impara: questo può
-difendere se stesso, e sa a chi gli convenga parlare e a chi tacere`;
+difendere se stesso, e sa a chi gli convenga parlare e a chi tacere.`;
 
-        // Puoi tenere lo stesso NAMESPACE o cambiarlo se vuoi un contatore separato da quello vecchio
-        const NAMESPACE = "netArtPlatonePermanenteRefresh"; 
-        const KEY = "visiteTotali";
-
+        // Funzione per il seme casuale fisso (stesse parole spariranno nello stesso ordine)
         function sfc32(a, b, c, d) {
             return function() {
               a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0; 
@@ -122,37 +119,35 @@ difendere se stesso, e sa a chi gli convenga parlare e a chi tacere`;
             }
         }
 
-        async function init() {
-            try {
-                const response = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`);
-                const data = await response.json();
-                const visits = data.value;
-
-                let rate = Math.floor(visits / 10) * 0.1;
-                if (rate > 1) rate = 1;
-
-                const contentDiv = document.getElementById('content');
-                const words = originalText.split(/(\s+)/);
-                const rand = sfc32(123, 456, 789, 1011);
-
-                const processedText = words.map(word => {
-                    if (word.trim() === "") return word;
-                    if (rand() < rate) return `<span class="hidden">${word}</span>`;
-                    return `<span>${word}</span>`;
-                });
-
-                contentDiv.innerHTML = processedText.join('');
-            } catch (error) {
-                document.getElementById('content').innerText = originalText;
+        function init() {
+            // Gestione locale del contatore (addio CountAPI instabile!)
+            let visits = localStorage.getItem('visite_platone_refresh');
+            if (visits === null) {
+                visits = 1;
+            } else {
+                visits = parseInt(visits) + 1;
             }
+            localStorage.setItem('visite_platone_refresh', visits);
+
+            // Calcolo della percentuale di sparizione (10% in più ogni 10 refresh)
+            let rate = Math.floor(visits / 10) * 0.1;
+            if (rate > 1) rate = 1;
+
+            const contentDiv = document.getElementById('content');
+            const words = originalText.split(/(\s+)/);
+            const rand = sfc32(123, 456, 789, 1011);
+
+            const processedText = words.map(word => {
+                if (word.trim() === "") return word;
+                if (rand() < rate) return `<span class="hidden">${word}</span>`;
+                return `<span>${word}</span>`;
+            });
+
+            contentDiv.innerHTML = processedText.join('');
         }
 
+        // Avvia la logica appena la pagina si carica
         init();
     </script>
 </body>
 </html>
-
-
-
-
-
